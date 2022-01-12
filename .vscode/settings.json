@@ -1,3 +1,4 @@
 {
-    "solidity.defaultCompiler": "localNodeModule"
+    "solidity.defaultCompiler": "localNodeModule",
+    "solidity.compileUsingLocalVersion": "/Users/cmgeorge/Dev/REEA/Blockchain/Teste/soljson-v0.8.10+commit.fc410830.js"
 }
