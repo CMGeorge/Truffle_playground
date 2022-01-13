@@ -2,8 +2,8 @@
 pragma solidity >=0.4.22 <0.9.0;
 
 import "./Base.sol";
-
-
+// import "@github.com/openzeppelin-solidity/contracts/ownership/Ownable.sol";
+// import "@github.com/openzeppelin-solidity/contracts/math/SafeMath.sol";
 interface VoteInterface {
     //ERRORS
     error VotingIsNotPublic();
@@ -20,6 +20,7 @@ interface VoteInterface {
         address delegate;
         bool voted; //usefull only single votes
         address[] votedFor; //usefull for multiple votes
+        bool enabled;
     }
     struct Candidate {
         string name;
@@ -33,23 +34,30 @@ interface VoteInterface {
       VottingSuspended,
       VottingEnded
     }
-    
+    function addVoter(
+        address id,
+        string memory name,
+        bool isCandidat
+    ) external;
     function addCandidate(address candidatContract, string memory name) external;
+    
     function removeCandidate(address candidateAddress) external;
 
-    function applyVote(address from, address to) external;
+    function applyVote(address to) external;
 
     function getWinner()
         external
         view
         returns (address winnerAddress, string memory winnerName);
 
+    // function startVoting()
     function endVoting() external;
 
     function getCandidates()
         external
         view
-        returns (address[] memory addressOfCandidates);
+        returns (Candidate[] memory);
+    function votersCount() external view returns (uint);
     // function resetVotes() external;
     // function removeAllCandidates() external;
     // function removeCandidate(address candidateAddress)external;
@@ -60,9 +68,9 @@ abstract contract Vote is Base, VoteInterface {
     /// Allow a person to give a vote to multiple persons
     bool multipleVotes;
     bool publicVotes;
-    bool runing;
+    bool running;
     bool anyoneCanPropose;
-
+    uint internal allVotersCount = 0;
     int256 maxVotes;
     
 
@@ -71,10 +79,10 @@ abstract contract Vote is Base, VoteInterface {
     mapping(address => Candidate) candidates;
 
     modifier voteRunning {
-        require(runing, "Can't do this while vote session is off");
+        require(running, "Can't do this while vote session is off");
         _;
     }
-    modifier voteNotRuning{
+    modifier voteNotRunning{
         // require(!runing, "Can't remove candidate while vote is running");
         _;
     }
@@ -99,13 +107,15 @@ abstract contract Vote is Base, VoteInterface {
             name: name,
             delegate: id,
             voted: false,
-            votedFor: emptyAddress
+            votedFor: emptyAddress,
+            enabled: true
         });
         emit VoterAdded(0);
         if (isCandidat) {
             // candidates[id] = Candidate({name: name, delegate: id, votes: 0});
             addCandidate(id, name);
         }
+        allVotersCount++;
     }
 
     // mapping (uint256 => )
@@ -139,7 +149,7 @@ abstract contract Vote is Base, VoteInterface {
         candidateList.push(_newCandidate);
         emit CandidateAdded(0);
     }
-    function removeCandidate(address candidateAddress) public override onlyOwner voteNotRuning {
+    function removeCandidate(address candidateAddress) public override onlyOwner voteNotRunning {
         //TODO: Remove it from everywhere...
         //1 Remove form candidates
         delete candidates[candidateAddress];
@@ -147,9 +157,13 @@ abstract contract Vote is Base, VoteInterface {
         //3 Remove from voters
 
     }
-    function applyVote(address from, address to) public override {
+    function applyVote(address to) public override {
         /// Only if campain is running
-        require(runing == true, "Campaing is not running");
+        address from = msg.sender;
+        require(
+            running == true, 
+            "Campaing is not running"
+        );
         /// Only if candidate is on the list
         require(
             candidates[to].delegate != address(0),
@@ -205,20 +219,27 @@ abstract contract Vote is Base, VoteInterface {
     }
 
     function endVoting() public override onlyOwner {
-        runing = false;
+        running = false;
     }
 
     function getCandidates()
         external
         view
         override
-        returns (address[] memory addressOfCandidates)
-    {}
+        returns (Candidate[] memory)
+    {
+        return candidateList;
+    }
+        function votersCount() public override view returns (uint){
+            return allVotersCount;
+        }
+
 }
 
 contract VoteContract is Base, Vote {
     constructor(address initalCandidate, string memory initialCandidateName) {
         addCandidate(initalCandidate, initialCandidateName);
+        running = true;
     }
     function enableAbstention(bool  enabled) public{
       if (enabled){
