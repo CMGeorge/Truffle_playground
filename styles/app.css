@@ -1,0 +1,25 @@
+* {
+    box-sizing: border-box;
+}
+body{
+    background-image: url(https://www.reea.net/fileadmin/user_upload/Imagini_home/home_beride_new.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    /* background-position: center; */
+    text-align: center;
+    padding: 0;
+    /* margin-top: 60; */
+    /* margin: 9; */
+    font-size: 16px;
+    font-weight: normal;
+}
+a{
+    color: white;
+    transition: all 0.2s;
+}
+a:hover{
+    opacity: 0.6;
+}
+a:active {
+    opacity: 1;
+}

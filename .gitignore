@@ -2,3 +2,6 @@
 node_modules
 bin
 build
+dist
+contracts/artifacts
+soljson-v0.8.10+commit.fc410830.js

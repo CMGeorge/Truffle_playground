@@ -239,7 +239,7 @@ abstract contract Vote is Base, VoteInterface {
 contract VoteContract is Base, Vote {
     constructor(address initalCandidate, string memory initialCandidateName) {
         addCandidate(initalCandidate, initialCandidateName);
-        running = true;
+        // running = true;
     }
     function enableAbstention(bool  enabled) public{
       if (enabled){

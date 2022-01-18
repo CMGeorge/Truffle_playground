@@ -96,8 +96,14 @@ contract("VoteContractTest", function (/* accounts */) {
     assert(voters==7,"Invalid number of voters. Should be 2 insead "+voters);
   });
   it("Checking voting....",async() =>{
-
-    await instance.applyVote("0x55704ae4BA64a2Ac28DA62C44e79D149B13B5FE2"); 
+    try{
+      await instance.applyVote("0x55704ae4BA64a2Ac28DA62C44e79D149B13B5FE2"); 
+    }catch (error){
+      const { error: contractError, reason } = error.data[Object.keys(error.data)[0]];
+      assert.strictEqual(reason, "Candidate does not exists", 
+      'Thrown error message was not the expected.');
+      return ;
+    }
   });
   // it("Add two votres and candidates also", async function () {
     
