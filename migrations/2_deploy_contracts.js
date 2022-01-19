@@ -23,10 +23,10 @@ module.exports = function (deployer) {
         console.log("NFT Created at: ",TESTNFTDeploy.address)
 
         let config = `
-        export const nftMarketAddress = ${marketAdress}
-        export const nftAddress = ${TESTNFTDeploy.address}
+        export const nftMarketAddress = "${marketAdress}"
+        export const nftAddress = "${TESTNFTDeploy.address}"
         `
-        fs.writeFileSync("pages/config.js",config);
+        fs.writeFileSync("pages/contract_config.js",config);
       });
   }
   // REEANFTDeploy.deployed();

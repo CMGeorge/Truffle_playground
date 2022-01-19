@@ -24,7 +24,7 @@ function ReeaNFTApp({ Component, pageProps }) {
               My NFTs
             </a>
           </Link>
-          <Link href="/account-dasboard">
+          <Link href="/account-dashboard">
             <a className='mr-6'>
               Account Dashboard
             </a>

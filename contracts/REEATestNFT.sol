@@ -4,7 +4,7 @@ pragma solidity >=0.4.22 <0.9.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-
+import "@openzeppelin/contracts/utils/Strings.sol";
 // import "truffle/console.sol";
 
 contract REEATestNFT is ReentrancyGuard {
@@ -89,7 +89,10 @@ contract REEATestNFT is ReentrancyGuard {
         uint price = idToTokenItem[itemId].price;
         uint tokenId = idToTokenItem[itemId].tokenId;
 
-        require( msg.value == price,"Price is not correct");
+        require( 
+          msg.value == price,
+          string(abi.encodePacked("Price is not correct. Sent ",msg.value," requested ",price))
+          );
         //Transfer
         idToTokenItem[itemId].seller.transfer(msg.value);
         IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);

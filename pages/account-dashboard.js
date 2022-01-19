@@ -8,7 +8,7 @@ import { nftMarketAddress, nftAddress } from "./contract_config.js"
 //import artifacts to use contract on page
 import NFTMarket from "../build/contracts/REEATestNFT.json"
 import NFT from "../build/contracts/TestNFT.json"
-export default function Home() {
+export default function MyItems() {
   const [nfts, setNFTs] = useState([])
   const [loadingState, setLoadingState] = useState("not-loaded")
 
@@ -20,12 +20,17 @@ export default function Home() {
   )
 
   async function loadNFTs() {
-    const provider = new ethers.providers.JsonRpcProvider({url: "http://localhost:7545"});
+
+    const web3Modal = new Web3Modal();
+    const metamaskConnection = await web3Modal.connect();
+    const metamaskProvider = new ethers.providers.Web3Provider(metamaskConnection);
+    const signer = metamaskProvider.getSigner();
+    // const provider = new ethers.providers.JsonRpcProvider({url: "http://localhost:7545"});
     
-    console.log("provider = ",provider)
-    const tokenContract = new ethers.Contract(nftAddress, NFT.abi, provider);
-    const marketContract = new ethers.Contract(nftMarketAddress, NFTMarket.abi, provider)
-    const data = await marketContract.fetchMarketTokens();
+    console.log("provider = ",metamaskProvider)
+    const tokenContract = new ethers.Contract(nftAddress, NFT.abi, metamaskProvider);
+    const marketContract = new ethers.Contract(nftMarketAddress, NFTMarket.abi, signer)
+    const data = await marketContract.fetchMyNFTs();
     const itmes = await Promise.all(data.map(async i => {
       console.log("Iterate");
       const tokenUri = await tokenContract.tokenURI(i.tokenId);
@@ -35,7 +40,7 @@ export default function Home() {
         meta = await axios.get(tokenUri);
       }catch(e){
         meta = {data:{}}
-        console.error("Cathc error on axios ", e);
+        console.error("Catch error on axios ", e);
       }
       const price = ethers.utils.formatUnits(i.price.toString(), "ether");
       console.log("Load URI ",tokenUri)
@@ -53,21 +58,6 @@ export default function Home() {
     }));
     setNFTs(itmes);
     setLoadingState("loaded");
-  }
-  async function buyNFT(nft) {
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
-    const contract = new ethers.Contract(nftMarketAddress, NFTMarket.abi, signer)
-
-    const price = ethers.utils.parseUnits(nft.price.toString(), "ether");
-    console.log("Preape to buy for ", price,nft.tokenId);
-    const transaction = await contract.createItemSale(nftAddress, nft.tokenId, {
-      value: price
-    });
-    await transaction.wait();
-    loadNFTs();
   }
 
   if (loadingState === "loaded" && !nfts.length) return (<h1 className="px-20 text-4x1 py-7">NO NFT found in marketplace</h1>)
