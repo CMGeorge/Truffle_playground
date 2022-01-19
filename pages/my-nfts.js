@@ -24,12 +24,12 @@ export default function MyItems() {
     const web3Modal = new Web3Modal();
     const metamaskConnection = await web3Modal.connect();
     const metamaskProvider = new ethers.providers.Web3Provider(metamaskConnection);
-
+    const SIGNER = metamaskProvider.getSigner();
     // const provider = new ethers.providers.JsonRpcProvider({url: "http://localhost:7545"});
     
     console.log("provider = ",metamaskProvider)
     const tokenContract = new ethers.Contract(nftAddress, NFT.abi, metamaskProvider);
-    const marketContract = new ethers.Contract(nftMarketAddress, NFTMarket.abi, metamaskProvider)
+    const marketContract = new ethers.Contract(nftMarketAddress, NFTMarket.abi, SIGNER)
     const data = await marketContract.fetchMyNFTs();
     const itmes = await Promise.all(data.map(async i => {
       console.log("Iterate");

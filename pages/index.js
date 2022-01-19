@@ -11,7 +11,7 @@ import NFT from "../build/contracts/TestNFT.json"
 export default function Home() {
   const [nfts, setNFTs] = useState([])
   const [loadingState, setLoadingState] = useState("not-loaded")
-
+  let userAddress;
   useEffect(
     () => {
       loadNFTs()
@@ -20,9 +20,15 @@ export default function Home() {
   )
 
   async function loadNFTs() {
+    const web3Modal = new Web3Modal();
+    const metamaskConnection = await web3Modal.connect();
+    const metamaskProvider = new ethers.providers.Web3Provider(metamaskConnection);
+    const METAMASK_SIGNER = metamaskProvider.getSigner();
+    userAddress = await METAMASK_SIGNER.getAddress();
+
     const provider = new ethers.providers.JsonRpcProvider({url: "http://localhost:7545"});
-    
-    console.log("provider = ",provider)
+    // const provider = new ethers.providers.JsonRpcProvider("https://matic-mumbai.chainstacklabs.com");
+    console.log("provider = ",provider,(await METAMASK_SIGNER.getAddress()));
     const tokenContract = new ethers.Contract(nftAddress, NFT.abi, provider);
     const marketContract = new ethers.Contract(nftMarketAddress, NFTMarket.abi, provider)
     const data = await marketContract.fetchMarketTokens();
@@ -38,7 +44,8 @@ export default function Home() {
         console.error("Cathc error on axios ", e);
       }
       const price = ethers.utils.formatUnits(i.price.toString(), "ether");
-      console.log("Load URI ",tokenUri)
+      console.log("Load URI ",i.seller)
+      // console.log("Compare Addresses "?i.seller!==userAddress)
       // if (meta){
         return {
           price,
@@ -47,7 +54,8 @@ export default function Home() {
           owner: i.owner,
           image: meta.data.image,
           name: meta.data.name,
-          description: meta.data.description
+          description: meta.data.description,
+          allowBuy: i.seller!==userAddress
         }
       // }
     }));
@@ -88,7 +96,7 @@ export default function Home() {
                 </div>
                 <div className='p-4 bg-black'>
                   <p className='text-3x-1 mb-4 font-bold text-white'>{nft.price} ETH</p>
-                  <button className='w-full bg-purple-500 text-white font-bold py-3 px-12 rounded' onClick={() => buyNFT(nft)}>Buy</button>
+                  <button className='w-full bg-purple-500 text-white font-bold py-3 px-12 rounded' onClick={() => buyNFT(nft)} hidden={!nft.allowBuy} text="Buy NFT">Buy NFT</button>
                 </div>
               </div>
             ))
